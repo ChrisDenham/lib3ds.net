@@ -167,7 +167,6 @@ namespace lib3ds.Net
 				{
 					Lib3dsFaces l=fa[3*i+j];
 					float[] p=new float[3], q=new float[3], n=new float[3];
-					float len, weight;
 
 					l.index=i;
 					l.next=fl[mesh.faces[i].index[j]];
@@ -176,13 +175,17 @@ namespace lib3ds.Net
 					lib3ds_vector_sub(p, mesh.vertices[mesh.faces[i].index[j<2?j+1:0]], mesh.vertices[mesh.faces[i].index[j]]);
 					lib3ds_vector_sub(q, mesh.vertices[mesh.faces[i].index[j>0?j-1:2]], mesh.vertices[mesh.faces[i].index[j]]);
 					lib3ds_vector_cross(n, p, q);
-					len=lib3ds_vector_length(n);
+#if LIB3DS_WEIGHTED_NORMALS
+					float len=lib3ds_vector_length(n);
 					if(len>0)
 					{
-						weight=(float)Math.Atan2(len, lib3ds_vector_dot(p, q));
+						float weight=(float)Math.Atan2(len, lib3ds_vector_dot(p, q));
 						lib3ds_vector_scalar_mul(l.normal, n, weight/len);
 					}
 					else lib3ds_vector_zero(l.normal);
+#else
+					lib3ds_vector_scalar_mul(l.normal, n, 1.0f);
+#endif
 				}
 			}
 
